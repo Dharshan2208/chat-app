@@ -1,0 +1,110 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f2f3f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#app {
+    width: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+header {
+    background: #0077cc;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#chat {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: #f9fafc;
+}
+
+.msg {
+    margin: 8px 0;
+    max-width: 70%;
+    padding: 10px;
+    border-radius: 10px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.me {
+    background: #0077cc;
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 0;
+}
+
+.other {
+    background: #e5e5ea;
+    color: black;
+    margin-right: auto;
+    border-bottom-left-radius: 0;
+}
+
+.time {
+    font-size: 10px;
+    opacity: 0.7;
+    margin-top: 2px;
+    text-align: right;
+}
+
+#input-bar {
+    display: flex;
+    border-top: 1px solid #ddd;
+}
+
+#message {
+    flex: 1;
+    border: none;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+#send {
+    background: #0077cc;
+    border: none;
+    color: white;
+    padding: 0 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#login {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+#username {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+#join {
+    margin-left: 8px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    padding: 0 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}

@@ -1,43 +1,72 @@
-import os
-import psycopg2
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from dotenv import load_dotenv
-from psycopg2.extras import RealDictCursor
-
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Connect once (simple for demo)
-conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-cur = conn.cursor()
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from database import get_conn
+from models import init_db
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
-# Store active clients
-clients = []
+# Initialize DB
+init_db()
 
 
-@app.websocket("/ws")
-async def chat(websocket: WebSocket):
-    await websocket.accept()
-    clients.append(websocket)
+class User(BaseModel):
+    username: str
 
+
+class Message(BaseModel):
+    username: str
+    content: str
+
+
+@app.post("/users/")
+def create_user(user: User):
+    conn = get_conn()
     try:
-        while True:
-            data = await websocket.receive_text()
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO users (username) VALUES (%s) RETURNING id",
+                (user.username,),
+            )
+            user_id = cur.fetchone()[0]
+            conn.commit()
+            return {"id": user_id, "username": user.username}
+    except Exception:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail="Username already exists")
+    finally:
+        conn.close()
 
-            # Open a fresh cursor for every insert
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO messages (id, sender_id, content) VALUES (gen_random_uuid(), NULL, %s)",
-                    (data,),
-                )
-                conn.commit()
 
-            # Broadcast to all clients
-            for client in clients:
-                await client.send_text(data)
+@app.post("/messages/")
+def send_message(msg: Message):
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE username = %s", (msg.username,))
+        user = cur.fetchone()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        cur.execute(
+            "INSERT INTO messages (user_id, content) VALUES (%s, %s)",
+            (user[0], msg.content),
+        )
+        conn.commit()
+    conn.close()
+    return {"status": "Message sent"}
 
-    except WebSocketDisconnect:
-        clients.remove(websocket)
+
+@app.get("/messages/")
+def get_messages():
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute("""
+        SELECT u.username, m.content, m.created_at
+        FROM messages m
+        JOIN users u ON m.user_id = u.id
+        ORDER BY m.created_at DESC
+        LIMIT 20
+        """)
+        rows = cur.fetchall()
+    conn.close()
+    return [{"username": r[0], "content": r[1], "created_at": r[2]} for r in rows]
