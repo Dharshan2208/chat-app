@@ -17,5 +17,5 @@
 
     - Then your .env should look like:
 
-        **DATABASE_URL**=postgresql://<username>:<password>@<hostname>:26257/<dbname>?sslmode=verify-full&sslrootcert=/home/laptop-username/.postgresql/root.crt
+        **DATABASE_URL**=postgresql://username:password@hostname:26257/<dbname>?sslmode=verify-full&sslrootcert=/home/laptop-username/.postgresql/root.crt
 
