@@ -19,6 +19,10 @@ class Message(BaseModel):
     username: str
     content: str
 
+@app.get("/")
+async def read_root():
+    return {"message": "Hello, Server is running."}
+
 
 @app.post("/users/")
 def create_user(user: User):
